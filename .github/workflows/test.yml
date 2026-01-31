@@ -1,28 +1,30 @@
-name: Tests 
+name: Tests + Autoformat (PR)
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
 
-  pull_request:
-    branches: [main]
-
+# Needed only for pushing formatting fixes back to the PR branch (same-repo PRs).
 permissions:
   contents: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      TARGET_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-
     steps:
-      - uses: actions/checkout@v4
+      # For PRs, check out the PR branch (not the merge commit)
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          # Make sure we check out the actual branch, not a detached merge commit
-          ref: ${{ env.TARGET_BRANCH }}
-          persist-credentials: true
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
 
       - name: Install uv (latest release)
         run: |
@@ -35,34 +37,58 @@ jobs:
           uv venv
           echo "✅ Virtual environment created at .venv"
 
-      - name: Activate venv and sync dependencies
+      - name: Sync dependencies
         run: |
           source .venv/bin/activate
           uv sync
 
-      - name: Auto-format code with Black
+      # -----------------------------
+      # Auto-format ONLY on PRs, push back to PR branch
+      # - Skips forks (no permission to push to a fork)
+      # -----------------------------
+      - name: Auto-format code with Black (PR only)
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           source .venv/bin/activate
           black .
 
-      - name: Set up Git credentials
+      - name: Commit & push Black changes to PR branch (same-repo PRs only)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+        env:
+          PR_BRANCH: ${{ github.head_ref }}
         run: |
+          set -e
+
+          # Configure git identity
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
 
-      - name: Commit and Push formatting changes
-        run: |
-          git pull origin "$TARGET_BRANCH"
+          # Use token auth for push
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+
+          # Only commit if there are changes
+          if git diff --quiet; then
+            echo "No formatting changes to commit."
+            exit 0
+          fi
+
           git add .
-          git diff --quiet && git diff --staged --quiet || git commit -m "style: auto-format code with Black"
-          git push origin HEAD:"$TARGET_BRANCH"
+          git commit -m "style: auto-format with Black"
+
+          # Push back to the PR branch
+          git push origin "HEAD:${PR_BRANCH}"
+
+      # On main pushes (and also PRs), ensure formatting is clean AFTER any auto-fix push.
+      # This keeps main protected and ensures the PR ends up formatted.
+      - name: Check formatting (main push / PR after autofix)
+        run: |
+          source .venv/bin/activate
+          black --check .
 
       - name: Run Tests
         run: |
           source .venv/bin/activate
           pytest
-
 
       - name: Upload Coverage Report to Codecov
         uses: codecov/codecov-action@v5
