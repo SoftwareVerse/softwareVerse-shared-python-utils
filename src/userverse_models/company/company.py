@@ -3,7 +3,10 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, field_validator, Field
 
 from sverse_generic_models.generic_pagination import PaginationParams
-from sverse_validators.phone_number import validate_phone_number_format
+from sverse_validators.phone_number import (
+    PHONE_NUMBER_JSON_SCHEMA_EXTRA,
+    validate_phone_number_format,
+)
 
 from .address import CompanyAddressModel
 
@@ -11,12 +14,12 @@ from .address import CompanyAddressModel
 class CompanyReadModel(BaseModel):
     """Model representing a company."""
 
-    id: int
+    id: str
     name: Optional[str] = None
     description: Optional[str] = None
     industry: Optional[str] = None
     phone_number: Optional[str] = Field(
-        None, json_schema_extra={"example": "1236547899"}
+        None, json_schema_extra=PHONE_NUMBER_JSON_SCHEMA_EXTRA
     )
     email: EmailStr
     address: Optional[CompanyAddressModel] = None
@@ -29,7 +32,7 @@ class CompanyUpdateModel(BaseModel):
     description: Optional[str] = None
     industry: Optional[str] = None
     phone_number: Optional[str] = Field(
-        None, json_schema_extra={"example": "1236547899"}
+        None, json_schema_extra=PHONE_NUMBER_JSON_SCHEMA_EXTRA
     )
     address: Optional[CompanyAddressModel] = None
 
@@ -47,7 +50,7 @@ class CompanyCreateModel(BaseModel):
     description: Optional[str] = None
     industry: Optional[str] = None
     phone_number: Optional[str] = Field(
-        None, json_schema_extra={"example": "1236547899"}
+        None, json_schema_extra=PHONE_NUMBER_JSON_SCHEMA_EXTRA
     )
     email: EmailStr
     address: Optional[CompanyAddressModel] = None

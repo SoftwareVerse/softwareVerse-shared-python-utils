@@ -1,5 +1,11 @@
-from typing import Optional
 import phonenumbers
+from typing import Optional
+
+PHONE_NUMBER_JSON_SCHEMA_EXTRA = {
+    "example": "+27821234567",
+    "pattern": r"^\+[1-9]\d{1,14}$",
+    "description": "Phone number in E.164 format.",
+}
 
 
 def validate_phone_number_format(phone: Optional[str]) -> Optional[str]:

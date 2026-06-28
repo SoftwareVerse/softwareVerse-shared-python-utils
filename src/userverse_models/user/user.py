@@ -3,7 +3,10 @@ from typing import Optional, Literal
 from pydantic import BaseModel, EmailStr, field_validator, Field
 
 from sverse_generic_models.generic_pagination import PaginationParams
-from sverse_validators.phone_number import validate_phone_number_format
+from sverse_validators.phone_number import (
+    PHONE_NUMBER_JSON_SCHEMA_EXTRA,
+    validate_phone_number_format,
+)
 
 
 class UserLoginModel(BaseModel):
@@ -19,7 +22,7 @@ class UserUpdateModel(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = Field(
-        None, json_schema_extra={"example": "1236547899"}
+        None, json_schema_extra=PHONE_NUMBER_JSON_SCHEMA_EXTRA
     )
     password: Optional[str] = None
 
@@ -36,7 +39,7 @@ class UserCreateModel(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = Field(
-        None, json_schema_extra={"example": "1236547899"}
+        None, json_schema_extra=PHONE_NUMBER_JSON_SCHEMA_EXTRA
     )
 
     @field_validator("phone_number")
@@ -49,12 +52,12 @@ class UserCreateModel(BaseModel):
 class UserReadModel(BaseModel):
     """Model representing a user."""
 
-    id: int
+    id: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: EmailStr
     phone_number: Optional[str] = Field(
-        None, json_schema_extra={"example": "1236547899"}
+        None, json_schema_extra=PHONE_NUMBER_JSON_SCHEMA_EXTRA
     )
     status: Optional[str] = None  # <-- Add this
     is_superuser: bool = Field(

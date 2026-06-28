@@ -44,7 +44,7 @@ class TestUserReadModel:
 
     def test_defaults_for_optional_fields(self):
         """Optional fields should default to None or False as configured."""
-        user = UserReadModel(id=1, email="user@example.com")
+        user = UserReadModel(id="1", email="user@example.com")
         assert user.status is None
         assert user.is_superuser is False
 
