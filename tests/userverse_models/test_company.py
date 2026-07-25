@@ -77,4 +77,7 @@ class TestCompanyUserModels:
     def test_company_user_read_requires_role(self):
         """CompanyUserReadModel should require role_name."""
         with pytest.raises(ValidationError):
-            CompanyUserReadModel(id=1, email="user@example.com")
+            CompanyUserReadModel(
+                id="550e8400-e29b-41d4-a716-446655440000",
+                email="user@example.com",
+            )

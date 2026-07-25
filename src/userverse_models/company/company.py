@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, field_validator, Field
 
@@ -14,7 +15,7 @@ from .address import CompanyAddressModel
 class CompanyReadModel(BaseModel):
     """Model representing a company."""
 
-    id: str
+    id: UUID
     name: Optional[str] = None
     description: Optional[str] = None
     industry: Optional[str] = None

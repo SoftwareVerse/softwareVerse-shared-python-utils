@@ -1,8 +1,33 @@
-# Shared Models
+# softwareVerse-shared-python-utils
 
-Package of shared Pydantic models for Userverse services and clients.
+Shared Pydantic models for Userverse services, clients, and downstream Python integrations.
 
-## Quick start (GitHub install)
+## What This Package Is For
+
+Use this package when you want one source of truth for:
+
+- Userverse request payloads
+- Userverse response payloads
+- Pagination wrappers
+- Reusable validators such as phone number validation
+
+This keeps API services, SDKs, and app integrations aligned on the same schema.
+
+## Installation
+
+Install from GitHub:
+
+```bash
+pip install git+https://github.com/SoftwareVerse/softwareVerse-shared-python-utils.git@v0.1.11
+```
+
+With `uv`:
+
+```bash
+uv add git+https://github.com/SoftwareVerse/softwareVerse-shared-python-utils.git@v0.1.11
+```
+
+Editable local install:
 
 ```bash
 git clone https://github.com/SoftwareVerse/softwareVerse-shared-python-utils.git
@@ -12,39 +37,116 @@ source .venv/bin/activate
 uv pip install -e .
 ```
 
-## Usage (separate projects)
+## Python And Dependency Support
 
-```bash
-# in your other project, with pip
-pip install git+https://github.com/SoftwareVerse/softwareVerse-shared-python-utils.git
-# with uv
-uv add git+https://github.com/SoftwareVerse/softwareVerse-shared-python-utils.git
-```
+- Python: `>=3.12`
+- Pydantic: `>=2`
 
-```bash 
-# Install a specific release tag (recommended for stability)
-# Tags follow semantic versioning (vMAJOR.MINOR.PATCH)
-# See: https://github.com/SoftwareVerse/softwareVerse-shared-python-utils/tags
-pip install git+https://github.com/SoftwareVerse/softwareVerse-shared-python-utils.git@<tag>
+## Package Layout
 
-```
+- `userverse_models.user`: user auth, profile, password, and token models
+- `userverse_models.company`: company, company-user, and company-role models
+- `sverse_generic_models`: generic API response and pagination wrappers
+- `sverse_validators`: shared validation helpers
+
+## Typical Usage
+
+### User models
 
 ```python
-from userverse_models import <ModelName>
+from userverse_models.user.user import (
+    UserCreateModel,
+    UserLoginModel,
+    UserReadModel,
+    RefreshTokenRequestModel,
+)
+from userverse_models.user.password import PasswordResetRequest
+
+user = UserCreateModel(
+    first_name="Ada",
+    last_name="Lovelace",
+    phone_number="+27821234567",
+)
+
+credentials = UserLoginModel(
+    email="ada@example.com",
+    password="strong-password",
+)
+
+refresh = RefreshTokenRequestModel(refresh_token="refresh-token")
+reset = PasswordResetRequest(email="ada@example.com")
 ```
 
-## Tests
+### Company models
+
+```python
+from userverse_models.company.address import CompanyAddressModel
+from userverse_models.company.company import CompanyCreateModel
+from userverse_models.company.user import CompanyUserAddModel
+from userverse_models.company.roles import RoleCreateModel
+
+company = CompanyCreateModel(
+    name="Acme",
+    email="info@acme.co.za",
+    address=CompanyAddressModel(
+        street="123 Main St",
+        city="Cape Town",
+        country="South Africa",
+    ),
+)
+
+membership = CompanyUserAddModel(
+    email="member@acme.co.za",
+    role="Viewer",
+)
+
+role = RoleCreateModel(
+    name="Supervisor",
+    description="Can manage approvals",
+)
+```
+
+### Generic API wrappers
+
+```python
+from sverse_generic_models.generic_response import GenericResponseModel
+from sverse_generic_models.generic_pagination import PaginatedResponse
+from userverse_models.user.user import UserReadModel
+
+response: GenericResponseModel[UserReadModel]
+page: GenericResponseModel[PaginatedResponse[UserReadModel]]
+```
+
+## Best Practices
+
+- Pin a release tag in downstream apps instead of tracking the repo head.
+- Reuse these models in both client code and tests so API drift is caught early.
+- Prefer the typed request models over ad hoc dict payloads.
+- Treat UUID ids as strings at the transport boundary unless your app needs `UUID` objects directly.
+- Keep this package schema-focused. Avoid putting service logic here.
+
+## When To Update This Repo
+
+Update this package whenever Userverse changes:
+
+- endpoint request bodies
+- endpoint response bodies
+- authentication token shapes
+- pagination wrappers
+- shared validation rules
+
+If the API changes first, update this repo before or alongside SDK changes.
+
+## Development
+
+Run tests:
 
 ```bash
-pytest
+uv run pytest
 ```
 
-## TODO
+Target the model tests directly:
 
-- [x] Replace `<tag>` with a real tag from https://github.com/SoftwareVerse/softwareVerse-shared-python-utils/tags
-- [ ] Add minimal usage example with real model names
-- [ ] Document supported Pydantic version(s)
-- [ ] Document compatibility with Python versions
-- [ ] Add "Why this package exists" section
-- [ ] Add changelog or release process
-- [ ] Add shared FastAPI utils section (if still needed)
+```bash
+PYTHONPATH=src uv run python -m pytest tests/userverse_models
+```
