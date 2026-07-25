@@ -16,6 +16,7 @@ class TestCompanyDefaultRoles:
 
     def test_name_and_description_properties(self):
         """Enum properties should split name and description."""
+        assert CompanyDefaultRoles.OWNER.name_value == "Owner"
         assert CompanyDefaultRoles.ADMINISTRATOR.name_value == "Administrator"
         assert (
             CompanyDefaultRoles.ADMINISTRATOR.description

@@ -3,7 +3,9 @@ from pydantic import ValidationError
 
 from userverse_models.user.password import OTPValidationRequest, PasswordResetRequest
 from userverse_models.user.user import (
+    RefreshTokenRequestModel,
     TokenResponseModel,
+    TokenRevocationResponseModel,
     UserCreateModel,
     UserLoginModel,
     UserQueryParams,
@@ -44,7 +46,9 @@ class TestUserReadModel:
 
     def test_defaults_for_optional_fields(self):
         """Optional fields should default to None or False as configured."""
-        user = UserReadModel(id="1", email="user@example.com")
+        user = UserReadModel(
+            id="550e8400-e29b-41d4-a716-446655440000", email="user@example.com"
+        )
         assert user.status is None
         assert user.is_superuser is False
 
@@ -81,7 +85,24 @@ class TestPasswordModels:
         with pytest.raises(ValidationError):
             PasswordResetRequest(email="bad-email")
 
+    def test_password_reset_defaults_to_otp(self):
+        """Password reset requests should default to the OTP flow."""
+        request = PasswordResetRequest(email="user@example.com")
+        assert request.method == "otp"
+
     def test_otp_validation_accepts_value(self):
         """OTP should be preserved as provided."""
         request = OTPValidationRequest(otp="123456")
         assert request.otp == "123456"
+
+
+class TestTokenModels:
+    """Tests for refresh/revocation token models."""
+
+    def test_refresh_token_request_preserves_value(self):
+        request = RefreshTokenRequestModel(refresh_token="refresh-token")
+        assert request.refresh_token == "refresh-token"
+
+    def test_token_revocation_defaults_true(self):
+        response = TokenRevocationResponseModel()
+        assert response.revoked is True

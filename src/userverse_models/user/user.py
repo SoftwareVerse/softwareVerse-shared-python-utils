@@ -1,4 +1,5 @@
 from typing import Optional, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, field_validator, Field
 
@@ -52,7 +53,7 @@ class UserCreateModel(BaseModel):
 class UserReadModel(BaseModel):
     """Model representing a user."""
 
-    id: str
+    id: UUID
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: EmailStr
@@ -79,6 +80,21 @@ class TokenResponseModel(BaseModel):
     refresh_token: str = Field(..., description="JWT refresh token")
     refresh_token_expiration: str = Field(
         ..., description="Refresh token expiration time in 'YYYY-MM-DD HH:MM:SS' format"
+    )
+
+
+class RefreshTokenRequestModel(BaseModel):
+    """Model for refresh token requests."""
+
+    refresh_token: str = Field(..., description="JWT refresh token")
+
+
+class TokenRevocationResponseModel(BaseModel):
+    """Model for refresh token revocation responses."""
+
+    revoked: bool = Field(
+        True,
+        description="Indicates whether the presented refresh token family was revoked",
     )
 
 
