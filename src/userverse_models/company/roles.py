@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from pydantic import field_validator, Field
 
 from sverse_generic_models.generic_pagination import PaginationParams
+from userverse_models.permissions import PermissionReadModel
 
 
 class CompanyDefaultRoles(str, Enum):
@@ -57,8 +58,16 @@ class RoleDeleteModel(BaseModel):
 class RoleReadModel(BaseModel):
     """Model representing a role."""
 
-    name: Optional[str]
-    description: Optional[str]
+    id: str | None = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    permissions: list[PermissionReadModel] = Field(default_factory=list)
+
+
+class RoleAssignCompaniesModel(BaseModel):
+    """Model for assigning a role to multiple companies."""
+
+    company_ids: list[str]
 
 
 class RoleQueryParamsModel(PaginationParams):

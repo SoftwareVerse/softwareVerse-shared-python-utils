@@ -46,6 +46,7 @@ uv pip install -e .
 
 - `userverse_models.user`: user auth, profile, password, and token models
 - `userverse_models.company`: company, company-user, and company-role models
+- `userverse_models.permissions`: global and company-scoped RBAC permission models
 - `sverse_generic_models`: generic API response and pagination wrappers
 - `sverse_validators`: shared validation helpers
 
@@ -104,6 +105,23 @@ role = RoleCreateModel(
     name="Supervisor",
     description="Can manage approvals",
 )
+```
+
+### Permission models
+
+```python
+from userverse_models.permissions import (
+    PermissionCreateModel,
+    PermissionQueryParamsModel,
+    PermissionReadModel,
+    PermissionUpdateModel,
+)
+
+permission = PermissionCreateModel(
+    name="invoice.approve",
+    description="Approve company invoices",
+)
+filters = PermissionQueryParamsModel(name="invoice", page=1, limit=25)
 ```
 
 ### Generic API wrappers

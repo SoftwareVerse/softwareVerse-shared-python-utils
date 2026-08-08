@@ -7,6 +7,7 @@ These tests cover the shared Pydantic models in `src/userverse_models`:
 - `company/company.py`: company create/update/read and query params
 - `company/user.py`: company user add/read models
 - `company/roles.py`: role enums and role models
+- `permissions.py`: global and company-scoped RBAC permission models
 
 ## How to run
 From the repository root:

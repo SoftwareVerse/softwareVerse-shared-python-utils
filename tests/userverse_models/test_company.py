@@ -7,6 +7,7 @@ from userverse_models.company.company import (
     CompanyQueryParamsModel,
     CompanyReadModel,
     CompanyUpdateModel,
+    UserCompanyReadModel,
 )
 from userverse_models.company.user import CompanyUserAddModel, CompanyUserReadModel
 
@@ -75,9 +76,30 @@ class TestCompanyUserModels:
         assert user.role == "Viewer"
 
     def test_company_user_read_requires_role(self):
-        """CompanyUserReadModel should require role_name."""
+        """CompanyUserReadModel should require a structured role."""
         with pytest.raises(ValidationError):
             CompanyUserReadModel(
                 id="550e8400-e29b-41d4-a716-446655440000",
                 email="user@example.com",
             )
+
+    def test_company_user_read_accepts_structured_role(self):
+        """Company members should expose role details rather than a role name."""
+        user = CompanyUserReadModel(
+            id="550e8400-e29b-41d4-a716-446655440000",
+            email="user@example.com",
+            role={"id": "role-id", "name": "Viewer"},
+        )
+
+        assert user.role.id == "role-id"
+        assert user.role.name == "Viewer"
+
+    def test_user_company_read_accepts_structured_role(self):
+        """A user's company response should include their structured role."""
+        company = UserCompanyReadModel(
+            id="550e8400-e29b-41d4-a716-446655440000",
+            email="info@example.com",
+            role={"id": "role-id", "name": "Owner"},
+        )
+
+        assert company.role.name == "Owner"
