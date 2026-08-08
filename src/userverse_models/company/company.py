@@ -10,6 +10,7 @@ from sverse_validators.phone_number import (
 )
 
 from .address import CompanyAddressModel
+from .roles import RoleReadModel
 
 
 class CompanyReadModel(BaseModel):
@@ -24,6 +25,12 @@ class CompanyReadModel(BaseModel):
     )
     email: EmailStr
     address: Optional[CompanyAddressModel] = None
+
+
+class UserCompanyReadModel(CompanyReadModel):
+    """Model representing a company and the requesting user's role."""
+
+    role: RoleReadModel
 
 
 class CompanyUpdateModel(BaseModel):

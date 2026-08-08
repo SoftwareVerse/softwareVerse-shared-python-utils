@@ -1,13 +1,13 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from .roles import CompanyDefaultRoles
+from .roles import CompanyDefaultRoles, RoleReadModel
 from ..user.user import UserReadModel
 
 
 class CompanyUserReadModel(UserReadModel):
     """Model representing a user within a company, including their role."""
 
-    role_name: str
+    role: RoleReadModel
 
 
 class CompanyUserAddModel(BaseModel):

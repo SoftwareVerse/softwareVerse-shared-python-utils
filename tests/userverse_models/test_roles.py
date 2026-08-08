@@ -3,12 +3,14 @@ from pydantic import ValidationError
 
 from userverse_models.company.roles import (
     CompanyDefaultRoles,
+    RoleAssignCompaniesModel,
     RoleCreateModel,
     RoleDeleteModel,
     RoleQueryParamsModel,
     RoleReadModel,
     RoleUpdateModel,
 )
+from userverse_models.permissions import PermissionScope
 
 
 class TestCompanyDefaultRoles:
@@ -41,9 +43,33 @@ class TestRoleModels:
 
     def test_role_read_allows_optional_fields(self):
         """RoleReadModel should accept optional fields."""
-        role = RoleReadModel(name=None, description=None)
+        role = RoleReadModel()
+        assert role.id is None
         assert role.name is None
         assert role.description is None
+        assert role.permissions == []
+
+    def test_role_read_includes_structured_permissions(self):
+        """Role responses should expose the v0.7.0 permission objects."""
+        role = RoleReadModel(
+            id="role-id",
+            name="Manager",
+            permissions=[
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "name": "company.read",
+                    "scope": PermissionScope.GLOBAL,
+                }
+            ],
+        )
+
+        assert role.permissions[0].name == "company.read"
+        assert role.permissions[0].scope is PermissionScope.GLOBAL
+
+    def test_role_company_assignment_preserves_ids(self):
+        """Role assignments should preserve all supplied company ids."""
+        assignment = RoleAssignCompaniesModel(company_ids=["one", "two"])
+        assert assignment.company_ids == ["one", "two"]
 
     def test_role_delete_rejects_default_role(self):
         """Deleting a default role should raise ValidationError."""
